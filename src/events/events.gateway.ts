@@ -1,13 +1,11 @@
 import {
+  ConnectedSocket,
   MessageBody,
   SubscribeMessage,
   WebSocketGateway,
-  WebSocketServer,
-  WsResponse,
 } from '@nestjs/websockets';
-import { from, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { Server } from 'socket.io';
+import { Socket } from 'socket.io';
+import { MessageDto } from './events.dto';
 
 @WebSocketGateway({
   cors: {
@@ -15,24 +13,18 @@ import { Server } from 'socket.io';
   },
 })
 export class EventsGateway {
-  @WebSocketServer()
-  server: Server;
-
-  @SubscribeMessage('events')
-  findAll(@MessageBody() data: any): Observable<WsResponse<number>> {
-    console.log(data);
-    return from([1, 2, 3]).pipe(
-      map((item) => ({ event: 'events', data: item })),
-    );
-  }
-
   @SubscribeMessage('message')
-  handleMessage(@MessageBody() message: string): void {
-    this.server.emit('message', message);
-  }
+  handleMessage(
+    @MessageBody() message: MessageDto,
+    @ConnectedSocket() client: Socket,
+  ): void {
+    /**
+     * do things with message
+     * */
+    const clientId: string = client.id;
+    console.log('🚀 ~ file: events.gateway.ts:25 ~ clientId:', clientId);
+    console.log('🚀 ~ file: events.gateway.ts:26 ~ message:', message);
 
-  @SubscribeMessage('identity')
-  async identity(@MessageBody() data: number): Promise<number> {
-    return data;
+    client.emit('message', `Message '${message.data}' received`);
   }
 }

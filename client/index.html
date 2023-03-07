@@ -26,10 +26,13 @@
       const messages = document.getElementById('messages');
 
       const handleSubmitNewMessage = () => {
-        socket.emit('message', { data: message.value });
+        const data = message.value;
+        if (message.value === '') return;
+        socket.emit('message', { data });
       };
 
-      socket.on('message', ({ data }) => {
+      socket.on('message', ( data ) => {
+        console.log('🚀 ~ file: index.html:35 ~ data:', data);
         handleNewMessage(data);
         message.value = '';
       });
@@ -46,15 +49,6 @@
 
       socket.on('connect', function () {
         console.log('Connected');
-
-        socket.emit('events', { test: 'test' });
-        socket.emit('identity', 0, (response) =>
-          console.log('Identity:', response),
-        );
-      });
-
-      socket.on('events', function (data) {
-        console.log('event', data);
       });
 
       socket.on('exception', function (data) {
